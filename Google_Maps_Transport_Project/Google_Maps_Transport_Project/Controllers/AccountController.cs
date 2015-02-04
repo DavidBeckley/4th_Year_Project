@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Entity;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -8,10 +9,15 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Owin.Security;
+using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.RetryPolicies;
+using Microsoft.WindowsAzure.Storage.Auth;
 using Google_Maps_Transport_Project.Models;
 
 namespace Google_Maps_Transport_Project.Controllers
 {
+    //private BusInformationContext db = new BusInformationContext(); 
+    
     [Authorize]
     public class AccountController : Controller
     {
