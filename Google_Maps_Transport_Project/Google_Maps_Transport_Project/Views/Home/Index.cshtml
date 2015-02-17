@@ -2,62 +2,91 @@
     ViewBag.Title = "Home Page";
 }
 
-<script>
-function initialize() {
-    var markTest = new google.maps.LatLng(53.289115, -6.357727);
-    var location = new google.maps.LatLng(53.288501, -6.363275);//53.2897, -6.3636
-    var mapOptions = {
-        center: location,
-        zoom: 14
-    };
-  var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-  var marker = new google.maps.Marker({
-      position: markTest,
-      map: map,
-      title: 'Bus Information'
-  });
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <script type="text/javascript">
+//    function initialize() {
+//    var markTest = new google.maps.LatLng(53.289115, -6.357727);
+//    var location = new google.maps.LatLng(53.288501, -6.363275);//53.2897, -6.3636
+//    var mapOptions = {
+//        center: location,
+//        zoom: 14
+//    };
+//    var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+//    var marker = new google.maps.Marker({
+//        position: markTest,
+//        map: map,
+//        title: 'Bus Information'
+//    });
 
-  var panoramaOptions = {
-    position: location,
-    pov: {
-        heading: 34,
-        pitch: 10
+//    var panoramaOptions = {
+//        position: location,
+//        pov: {
+//            heading: 34,
+//            pitch: 10
+//        }
+//    };
+//    var panorama = new google.maps.StreetViewPanorama(document.getElementById('pano'), panoramaOptions);
+//    map.setStreetView(panorama);
+
+//    var infowindow = new google.maps.InfoWindow({
+//        content: ('<a href="http://www.dublinbus.ie/PageFiles/12205/27%281%29_From_Hawkins_St_Towards_Jobstown_Dec_2015.pdf">27 Bus Information</a>')
+//    });
+
+//    google.maps.event.addListener(marker, 'click', function () {
+//        map.setCenter(marker.getPosition());
+//        infowindow.open(map,marker);
+
+//    });
+
+//}
+
+    google.maps.event.addDomListener(window, 'load', initialize);
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (p) {
+            var LatLng = new google.maps.LatLng(p.coords.latitude, p.coords.longitude);
+            var markTest = [
+                [53.289115, -6.357727],[LatLng]
+            ];
+            var mapOptions = {
+                center: LatLng,
+                zoom: 13,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+            var map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+            var marker = new google.maps.Marker({
+                position: LatLng,
+                map: map,
+                title: "<div style = 'height:60px;width:200px'><b>Your location:</b><br />Latitude: " + p.coords.latitude + "<br />Longitude: " + p.coords.longitude
+            });
+            google.maps.event.addListener(marker, "click", function (e) {
+                var infoWindow = new google.maps.InfoWindow();
+                infoWindow.setContent(marker.title);
+                infoWindow.open(map, marker);
+            });
+        });
+    } else {
+        alert('Geo Location feature is not supported in this browser.');
     }
-  };
-  var panorama = new google.maps.StreetViewPanorama(document.getElementById('pano'), panoramaOptions);
-  map.setStreetView(panorama);
 
-  var infowindow = new google.maps.InfoWindow({
-      content: ('<a href="http://www.dublinbus.ie/PageFiles/12205/27%281%29_From_Hawkins_St_Towards_Jobstown_Dec_2015.pdf">27 Bus Information</a>')
-  });
+    </script>
 
-  google.maps.event.addListener(marker, 'click', function () {
-      map.setCenter(marker.getPosition());
-      infowindow.open(map,marker);
+    @*<div id="dvMap" style="width: 500px; height: 500px">
+        </div>*@
+    <div class="jumbotron">
+            <p class="lead">
+            </div>
 
-  });
-
-}
-
-google.maps.event.addDomListener(window, 'load', initialize);
-
-</script>
-
-
-<div class="jumbotron">
-    <p class="lead">
-    </div>
-
-<div class="row">
-    <div class="col-md-4">
-        <div class="wrap left rounded">
-            <input type="text" class="search left rounded" value="Search for Location" />
-            <button class="go left rounded"><span></span></button>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div id="map-canvas"></div>
-    </div>
-<div class="col-md-4">
-    <div id= "pano"></div>
-    </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="wrap left rounded">
+                    <input type="text" class="search left rounded" value="Search for Location" />
+                    <button class="go left rounded"><span></span></button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div id="map-canvas"></div>
+            </div>
+        <div class="col-md-4">
+            <div id= "pano"></div>
+            </div>
