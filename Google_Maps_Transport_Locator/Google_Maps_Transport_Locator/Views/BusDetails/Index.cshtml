@@ -1,0 +1,81 @@
+﻿@model IEnumerable<Google_Maps_Transport_Locator.Models.BusDetails>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.busNumber)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.busTowards)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.busVia)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.bStopNumber)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.busAddress)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.busStopLocation)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.latitude)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.longitude)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.heading)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.busNumber)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.busTowards)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.busVia)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.bStopNumber)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.busAddress)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.busStopLocation)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.latitude)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.longitude)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.heading)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.ID }) |
+            @Html.ActionLink("Details", "Details", new { id=item.ID }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.ID })
+        </td>
+    </tr>
+}
+
+</table>
