@@ -7,6 +7,7 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using Google_Maps_Transport_Locator.Models;
+using System.Web.Script.Serialization;
 
 namespace Google_Maps_Transport_Locator.Controllers
 {
@@ -15,9 +16,21 @@ namespace Google_Maps_Transport_Locator.Controllers
         private BusDetailsContext db = new BusDetailsContext();
 
         // GET: BusDetails
-        public ActionResult Index()
+        //public ActionResult Index()
+        //{
+        //    return View(db.details.ToList());
+        //}
+
+        public JsonResult Index()
         {
-            return View(db.details.ToList());
+            var l = db.details.ToList();
+            System.Diagnostics.Debug.WriteLine("Count of l:" + l.Count);
+
+
+            var json = new JavaScriptSerializer().Serialize(l);
+            System.Diagnostics.Debug.WriteLine("Count of l:" + l.Count);
+            //return json;
+            return Json(l, JsonRequestBehavior.AllowGet);
         }
 
         // GET: BusDetails/Details/5
