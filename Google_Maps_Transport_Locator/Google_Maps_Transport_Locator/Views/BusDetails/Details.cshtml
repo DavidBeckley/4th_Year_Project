@@ -1,0 +1,90 @@
+﻿@model Google_Maps_Transport_Locator.Models.BusDetails
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>BusDetails</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.busNumber)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.busNumber)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.busTowards)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.busTowards)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.busVia)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.busVia)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.bStopNumber)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.bStopNumber)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.busAddress)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.busAddress)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.busStopLocation)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.busStopLocation)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.latitude)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.latitude)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.longitude)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.longitude)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.heading)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.heading)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.ID }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
