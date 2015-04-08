@@ -16,22 +16,22 @@ namespace Google_Maps_Transport_Locator.Controllers
         private BusDetailsContext db = new BusDetailsContext();
 
          //GET: BusDetails
-        public ActionResult Index()
-        {
-            return View(db.details.ToList());
-        }
-
-        //public JsonResult Index()
+        //public ActionResult Index()
         //{
-        //    var l = db.details.ToList();
-        //    System.Diagnostics.Debug.WriteLine("Count of l:" + l.Count);
-
-
-        //    var json = new JavaScriptSerializer().Serialize(l);
-        //    System.Diagnostics.Debug.WriteLine("Count of l:" + l.Count);
-        //    //return json;
-        //    return Json(l, JsonRequestBehavior.AllowGet);
+        //    return View(db.details.ToList());
         //}
+
+        public JsonResult Index()
+        {
+            var l = db.details.ToList();
+            System.Diagnostics.Debug.WriteLine("Count of l:" + l.Count);
+
+
+            var json = new JavaScriptSerializer().Serialize(l);
+            System.Diagnostics.Debug.WriteLine("Count of l:" + l.Count);
+            //return json;
+            return Json(l, JsonRequestBehavior.AllowGet);
+        }
 
         // GET: BusDetails/Details/5
         public ActionResult Details(int? id)
