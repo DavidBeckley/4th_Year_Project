@@ -20,6 +20,12 @@
             <input type="text" class="search left rounded" value="Search for Location" />
             <button class="go left rounded"><span></span></button>
         </div>
+        <br /><br />    
+        <div>
+            
+
+            <button onclick=" displayClosestMarker();">Show Nearest Bus Stop</button>
+        </div>
     </div>
     <div class="col-md-4">
         <div id="map-canvas"></div>
@@ -49,12 +55,61 @@
     </script>
 
     <script>
-        
+        var markersArray = [];
+        var map;
+        var markers = [];
+        var myLat;
+        var myLong;
+        var distanceArray = [];
+
+        function displayClosestMarker() {
+
+            //alert(markers.length);
+            for (i = 0; i < markers.length; i++) {
+                markers[i].setMap(null);
+            }
+
+            //markersArray[0].latitude);
+
+            var distant;
+            var markerLocationLat;
+            var markerLocationLng;
+            for (i = 0; i < markersArray.length; i++) {
+                var distance = getDistanceFromLatLonInKm(markersArray[i].latitude, markersArray[i].longitude, myLat, myLong);
+                distanceArray.push(distance);
+                distant = distance;
+                for (j = 0; j < markersArray.length; j++) {
+                    if (distanceArray[j] < distant) {
+                        distant = distanceArray[j];
+                        markerLocationLat = markersArray[j].latitude;
+                        markerLocationLng = markersArray[j].longitude;
+                    }
+                }
+
+            }
+            
+            //distanceArray.sort();
+            //alert(distanceArray[0]);
+            //alert(distanceArray[0].longitude);
+            //alert(distant);
+
+            var marker = new google.maps.Marker({
+                position: new google.maps.LatLng(markerLocationLat, markerLocationLng),
+                map: map,
+                title: 'Bus Information'
+            });
+
+        }
+
+
+
         $(document).ready(function () {
 
+            
             function initialize() {
-                var myLat;
-                var myLong;
+                
+
+                
                 //Starting location - Bus stop
                 var location = new google.maps.LatLng(53.288501, -6.363275);
                 var mapOptions = {
@@ -69,7 +124,7 @@
                     console.log(JSON.stringify(response));
 
                     //Single Marker
-                    var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+                    map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
                     //Find Own Coordinates
                     if (navigator.geolocation) {
@@ -100,20 +155,20 @@
                         alert('Geo Location feature is not supported in this browser.');
                     }
 
-                    for(var i = 0; i < response.length; i++) {
+                    
+                    for (var i = 0; i < response.length; i++) {
+                        markersArray.push( {latitude : response[i]["latitude"], longitude : response[i]["longitude"] } );
                         marker = new google.maps.Marker({
                             position: new google.maps.LatLng(response[i]["latitude"], response[i]["longitude"]),
                             map: map,
                             title: 'Bus Information'
                         });
-
-                        
+                        markers.push(marker);
 
                         google.maps.event.addListener(marker, 'click', (function (marker, i) {
                             return function () {
-                                var distance = getDistanceFromLatLonInKm(response[i]["latitude"], response[i]["longitude"], myLat, myLong);
-                                
-                                var infowindow = new google.maps.InfoWindow({
+                               var distance = getDistanceFromLatLonInKm(response[i]["latitude"], response[i]["longitude"], myLat, myLong);
+                               var infowindow = new google.maps.InfoWindow({
                                     content: ("Bus Number: " + response[i]["busNumber"] +
                                                "<br />Distance: " + distance.toPrecision(4) + "km" +
                                              "<br />Location: " + response[i]["busStopLocation"])
@@ -122,8 +177,11 @@
                             }
                            })(marker, i));
                         
-                    }
+                    }                 
 
+                    //distanceArray.sort();
+
+                    //alert(distanceArray[0]);
                     
                 }
 
@@ -182,6 +240,10 @@
                     }
                 });
             }
+
+            //alert(distanceArray[0]);
+
+
             call(xTest);
         });
     </script>
