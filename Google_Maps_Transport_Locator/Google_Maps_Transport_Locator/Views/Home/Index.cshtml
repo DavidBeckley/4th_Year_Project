@@ -5,6 +5,7 @@
 }
 <script src="~/Scripts/jquery-1.10.2.min.js"></script>
 <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<script src="~/Scripts/Distance.js"></script>
 
 
 @*<div id="dvMap" style="width: 500px; height: 500px">
@@ -28,10 +29,32 @@
     </div>
 
     <script>
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+            var R = 6371; // Radius of the earth in km
+            var dLat = deg2rad(lat2 - lat1);  // deg2rad below
+            var dLon = deg2rad(lon2 - lon1);
+            var a =
+                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2)
+            ;
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            var d = R * c; // Distance in km
+            return d;
+        }
+
+        function deg2rad(deg) {
+            return deg * (Math.PI / 180)
+        }
+    </script>
+
+    <script>
         
         $(document).ready(function () {
 
             function initialize() {
+                var myLat;
+                var myLong;
                 //Starting location - Bus stop
                 var location = new google.maps.LatLng(53.288501, -6.363275);
                 var mapOptions = {
@@ -40,12 +63,6 @@
                     mapTypeId: google.maps.MapTypeId.ROADMAP
                 };
 
-                //var locations = [
-                //    [function (response) {
-                        
-                //    }]
-                //];
-
                 var m = function (response) {
                     console.log(typeof (response));
                     console.log(response);
@@ -53,6 +70,36 @@
 
                     //Single Marker
                     var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+                    //Find Own Coordinates
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function (p) {
+                            var LatLng = new google.maps.LatLng(p.coords.latitude, p.coords.longitude);
+                            myLat = p.coords.latitude;
+                            myLong = p.coords.longitude;
+                            var markTest = [
+                                [53.289115, -6.357727], [LatLng]
+                            ];
+                            var mapOptions = {
+                                center: LatLng,
+                                zoom: 13,
+                                mapTypeId: google.maps.MapTypeId.ROADMAP
+                            };
+                            var marker = new google.maps.Marker({
+                                position: LatLng,
+                                map: map,
+                                title: "<div style = 'height:60px;width:200px'><b>Your location:</b><br />Latitude: " + p.coords.latitude + "<br />Longitude: " + p.coords.longitude
+                            });
+                            google.maps.event.addListener(marker, "click", function (e) {
+                                var infoWindow = new google.maps.InfoWindow();
+                                infoWindow.setContent(marker.title);
+                                infoWindow.open(map, marker);
+                            });
+                        });
+                    } else {
+                        alert('Geo Location feature is not supported in this browser.');
+                    }
+
                     for(var i = 0; i < response.length; i++) {
                         marker = new google.maps.Marker({
                             position: new google.maps.LatLng(response[i]["latitude"], response[i]["longitude"]),
@@ -60,39 +107,27 @@
                             title: 'Bus Information'
                         });
 
+                        
+
                         google.maps.event.addListener(marker, 'click', (function (marker, i) {
                             return function () {
+                                var distance = getDistanceFromLatLonInKm(response[i]["latitude"], response[i]["longitude"], myLat, myLong);
+                                
                                 var infowindow = new google.maps.InfoWindow({
-                                    content: ("Bus Number: " + response[i]["busNumber"],
-                                             "\nLocation: " + response[i]["busStopLocation"])
+                                    content: ("Bus Number: " + response[i]["busNumber"] +
+                                               "<br />Distance: " + distance.toPrecision(4) + "km" +
+                                             "<br />Location: " + response[i]["busStopLocation"])
                                 });
                             infowindow.open(map, marker);
                             }
                            })(marker, i));
                         
                     }
+
+                    
                 }
 
                 call(m);
-
-
-                //Place multiple markers
-                //var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-                //for (i = 0; i < response.length; i++) {
-                //    marker = new google.maps.Marker({
-                //        position: new google.maps.LatLng(response[i][7], locations[i][8]),
-                //        map: map,
-                //        title: 'Bus Information'
-                //    });
-
-                //    //Add info window to each marker
-                //    google.maps.event.addListener(marker, 'click', (function (marker, i) {
-                //        return function () {
-                //            infowindow.setContent(response[i][0], response[i][1], response[i][2], response[i][3], response[i][4], response[i][5]);
-                //            infowindow.open(map, marker);
-                //        }
-                //    })(marker, i));
-
 
                     //Pano settings - same location as coordinates
                     var panoramaOptions = {
@@ -116,34 +151,6 @@
 
             //Initalizes what is in the function
             google.maps.event.addDomListener(window, 'load', initialize);
-
-            //Find Own Coordinates
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function (p) {
-                    var LatLng = new google.maps.LatLng(p.coords.latitude, p.coords.longitude);
-                    var markTest = [
-                        [53.289115, -6.357727], [LatLng]
-                    ];
-                    var mapOptions = {
-                        center: LatLng,
-                        zoom: 13,
-                        mapTypeId: google.maps.MapTypeId.ROADMAP
-                    };
-                    var map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
-                    var marker = new google.maps.Marker({
-                        position: LatLng,
-                        map: map,
-                        title: "<div style = 'height:60px;width:200px'><b>Your location:</b><br />Latitude: " + p.coords.latitude + "<br />Longitude: " + p.coords.longitude
-                    });
-                    google.maps.event.addListener(marker, "click", function (e) {
-                        var infoWindow = new google.maps.InfoWindow();
-                        infoWindow.setContent(marker.title);
-                        infoWindow.open(map, marker);
-                    });
-                });
-            } else {
-                alert('Geo Location feature is not supported in this browser.');
-            }
 
             var x = "empty";
             var xTest = function (response) {
