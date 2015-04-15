@@ -51,6 +51,12 @@
     border:1px solid #ccc;
     background:white url(http://i.imgur.com/lFkqn.png) left center no-repeat;
 }
+.goButton {
+    position:relative; top:2px; /* readujst in jsfiddle */
+    padding:4px 5px 8px 5px;
+    text-align:center;
+    border:1px solid #ccc;
+}
 .go {
     position: relative; top:0;
     padding:3px 4px 5px;
