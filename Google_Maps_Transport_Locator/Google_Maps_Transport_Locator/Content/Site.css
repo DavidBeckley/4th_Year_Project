@@ -13,16 +13,16 @@
     position: relative;
     border-style: solid;
     border-color: #696969;
-    width: auto, 380px; 
-    height: 290px;
+    width: auto, 450px; 
+    height: 350px;
 }
 
 #pano {
     position: relative;
     border-style: solid;
     border-color: #696969;
-    width: 380px, auto; 
-    height: 290px;
+    width: 450px, auto; 
+    height: 350px;
     
     /*margin: 0px 0px 0;
             Top, Left, Bottom, Right*/
