@@ -1,0 +1,508 @@
+﻿@model Google_Maps_Transport_Locator.Models.BusDetails
+
+@{
+    ViewBag.Title = "Home Page";
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<script src="~/Scripts/Distance.js"></script>
+
+<body onload="initialize();">
+    <div class="jumbotron">
+        </div>
+    <div class="row">
+        <div class="col-md-4">
+            <input type="text" class="search left form-control" id="search" placeholder="Search for locations...">
+            <span class="input-group-btn">
+                <button class="goButton left btn btn-default" onclick="findLocation(search.value);" type="button">Go!</button>
+            </span>
+            <br />
+            <div class="dropdown">
+                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+                    Select a destination
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" style="height: auto; max-height: 200px; overflow-x: hidden;" role="menu" id="appendDestinations" aria-labelledby="dropdownMenu1"> </ul>
+            </div> <br />
+            <div>
+                <button class="btn btn-default" onclick=" displayClosestMarker();">Show Nearest Bus Stop</button> <br /><br />
+                <button class="btn btn-default" onclick=" showMarkers();">Show Markers</button><br /><br />
+                <button class="btn btn-default" onclick=" findDestinationStop();">Find closest to destination Stop</button>
+           <br /><br />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div id="map-canvas"></div>
+        </div>
+        <div class="col-md-4">
+            <div style="text-align:center;" id="pano"><br /><br /><br /><br /><br /><br />Click marker to see street view</div>
+        </div>
+        </div>
+</body>
+<script>
+    //Distance calculation - reference 'http://stackoverflow.com/questions/27928/how-do-i-calculate-distance-between-two-latitude-longitude-points'
+    function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+        var R = 6371; // Radius of the earth in km
+        var dLat = deg2rad(lat2 - lat1);  // deg2rad below
+        var dLon = deg2rad(lon2 - lon1);
+        var a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2)
+        ;
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        var d = R * c; // Distance in km
+        return d;
+    }
+
+    function deg2rad(deg) {
+        return deg * (Math.PI / 180)
+    }
+</script>
+
+<script>
+    var markersArray = [];
+    var map;
+    var markers = [];
+    var myLat;
+    var myLong;
+    var distanceArray = [];
+    var busStops = [];
+    var busStopStreet = [];
+    var busTo = [];
+    var busVia = [];
+    var stopLocation;
+    var closestMarker;
+    var marker;
+    var closestArray = [];
+    var closeStops = [];
+    var busTowards = [];
+    var busFrom = [];
+    var buses = [];
+    var searchArray = [];
+
+    function showAlert() {
+        alert("OK");
+    }
+
+    function findLocation(value) {
+        var slocation = value;
+
+        //alert(busStopStreet[0]);
+        if(slocation!= "" ) {
+            for (i = 0; i < markers.length; i++) {
+                var lo = busStopStreet[i];
+                if (slocation != lo) {
+                    //alert(lo);
+                    markers[i].setMap(null);
+                    //markers[i].show();
+                } else {
+                    searchArray.push(markers[i]);
+                    markers[i].setMap(null);
+                    //searchArray[i].setMap(map);
+                }
+            }
+            for(i = 0; i < searchArray.length; i++) {
+                searchArray[i].setMap(map);
+            }
+        }
+        else {
+            alert("Sorry. Try again...");
+        }
+    }
+
+    //Display markers
+    function showMarkers() {
+        closestMarker.setMap(null);
+        marker.setMap(null);
+        for (i = 0; i < markers.length; i++) {
+            markers[i].setMap(map);
+ 
+        }
+        for (i = 0; i < searchArray.length; i++) {
+            searchArray[i].setMap(null);
+
+        }
+        searchArray = [];
+        for (i = 0; i < markersArray.length; i++) {
+            markersArray[i].setMap(null);
+
+        }
+    }
+
+    //find closet stop in relation to stop and destination
+    function findDestinationStop()
+    {
+            var dist;
+            var markerLoLat;
+            var markerLoLng;
+            var closeStop;
+            var roadLo;
+            var coordos;
+            var towards;
+            var from;
+            if (searchArray.length == 1) {
+                var distance = getDistanceFromLatLonInKm(searchArray[0].getPosition().lat(), searchArray[0].getPosition().lng(), myLat, myLong);
+                markerLoLat = searchArray[0].getPosition().lat();
+                markerLoLng = searchArray[0].getPosition().lng();
+            }
+            else {
+                for (i = 0; i < searchArray.length; i++) {
+                    var distance = getDistanceFromLatLonInKm(searchArray[i].getPosition().lat(), searchArray[i].getPosition().lng(), myLat, myLong);
+                    closestArray.push(distance);
+                    dist = distance;
+                    //alert(dist);
+                    for (j = 0; j < searchArray.length; j++) {
+                        if (closestArray[j] < dist) {
+                            dist = closestArray[j];
+                            markerLoLat = searchArray[j].getPosition().lat();
+                            markerLoLng = searchArray[j].getPosition().lng();
+                            //closeStop = closeStops[j].busNumber;
+                            //roadLo = buses[j];
+                            //towards = busTowards[j];
+                            //from = busFrom[j]
+                            //coordos = distance; //getDistanceFromLatLonInKm(markerLoLat, markerLoLng, myLat, myLong);
+                        }
+                    }
+                }
+            }
+
+            for (i = 0; i < searchArray.length; i++) {
+                searchArray[i].setMap(null);
+            }
+            //alert(markerLoLat);
+
+        //Display closet Marker
+            marker = new google.maps.Marker({
+                position: new google.maps.LatLng(markerLoLat, markerLoLng),
+                map: map,
+                title: 'Bus Information',
+
+            });
+
+        //Pano settings - same location as coordinates
+            var newLoc = new google.maps.LatLng(markerLoLat, markerLoLng)
+            var panoramaOptions = {
+                position: newLoc,
+                pov: {
+                    heading: 34,
+                    pitch: 10
+                }
+            };
+
+        //Set Pano
+            var panorama = new google.maps.StreetViewPanorama(document.getElementById('pano'), panoramaOptions);
+            map.setStreetView(panorama);
+
+        //Add information into window
+            google.maps.event.addListener(marker, "click", function (e) {
+                var infoWindow = new google.maps.InfoWindow();
+                infoWindow.setContent(marker.content);
+                infoWindow.open(map, marker);
+            });
+
+        displayClosestMarker();
+
+    }
+    
+
+    //Find closetMarker
+    function displayClosestMarker() {
+        //alert(markers.length);
+        for (i = 0; i < markers.length; i++) {
+            markers[i].setMap(null);
+        }
+
+        var distant;
+        var markerLocationLat;
+        var markerLocationLng;
+        var stop;
+        var roadLocation;
+        var coords;
+        var to;
+        var via;
+
+        for (i = 0; i < markersArray.length; i++) {
+            var distance = getDistanceFromLatLonInKm(markersArray[i].latitude, markersArray[i].longitude, myLat, myLong);
+            distanceArray.push(distance);
+            distant = distance;
+            for (j = 0; j < markersArray.length; j++) {
+                if (distanceArray[j] < distant) {
+                    distant = distanceArray[j];
+                    markerLocationLat = markersArray[j].latitude;
+                    markerLocationLng = markersArray[j].longitude;
+                    stop = busStops[j].busNumber;
+                    roadLocation = busStopStreet[j];
+                    to = busTo[j];
+                    via = busVia[j]
+                    coords = getDistanceFromLatLonInKm(markerLocationLat, markerLocationLng, myLat, myLong);
+                }
+            }
+
+
+        }
+
+        //Display closet Marker
+        closestMarker = new google.maps.Marker({
+            position: new google.maps.LatLng(markerLocationLat, markerLocationLng),
+            map: map,
+            title: 'Bus Information',
+            content: ("<br /><b>Bus Number:</b> " + stop +
+                        "<br /><b>Bus To: </b>" + to +
+                        "<br /><b>Bus Via: </b>" + via +
+                       "<br /><b>Location: </b>" + markerLocationLat + " " + markerLocationLng +
+                       "<br /><b>Distance: </b>" + coords.toPrecision(4) + "km" +
+                       "<br /><b>Road: </b>" + roadLocation)
+        });
+
+        //Pano settings - same location as coordinates
+        var newLoc = new google.maps.LatLng(markerLocationLat, markerLocationLng)
+        var panoramaOptions = {
+            position: newLoc,
+            pov: {
+                heading: 34,
+                pitch: 10
+            }
+        };
+
+        //Set Pano
+        var panorama = new google.maps.StreetViewPanorama(document.getElementById('pano'), panoramaOptions);
+        map.setStreetView(panorama);
+
+        //Add information into window
+        google.maps.event.addListener(closestMarker, "click", function (e) {
+            var infoWindow = new google.maps.InfoWindow();
+            infoWindow.setContent(closestMarker.content);
+            infoWindow.open(map, closestMarker);
+        });
+
+    }
+
+    //Ajax - to get data
+    $(document).ready(function () {
+
+        function appendDestinations(response) {
+            var street;
+            for (var i = 0; i < response.length; i++) {
+                street = busStopStreet[i]; //response[i]["busAddress"];
+                $('#appendDestinations').append("<li id='" + street + "' class='dropdownDestinations' role='presentation'><a role='menuitem' tabindex='-1' href='#'>" + response[i]["busAddress"] + "</a></li>");
+            }
+            $('.dropdownDestinations').click(function () {
+                findLocation($(this).attr("id"));
+            });
+        }
+
+        function initialize() {
+
+            
+
+            //Starting location - Bus stop
+            var location = new google.maps.LatLng(53.331503, -6.294556);
+            var mapOptions = {
+                center: location,
+                zoom: 10,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                streetViewControl: false
+            };
+
+            //Convert to JSON string
+            var m = function (response) {
+                console.log(typeof (response));
+                console.log(response);
+                console.log(JSON.stringify(response));
+
+
+                //Single Marker
+                map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+                //Find Own Coordinates
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function (p) {
+                        var LatLng = new google.maps.LatLng(p.coords.latitude, p.coords.longitude);
+                        myLat = p.coords.latitude;
+                        myLong = p.coords.longitude;
+
+                        var mapOptions = {
+                            center: LatLng,
+                            zoom: 13,
+                            mapTypeId: google.maps.MapTypeId.ROADMAP
+                        };
+
+                        //Add Own Coordinate Marker marker
+                        var marker = new google.maps.Marker({
+                            position: LatLng,
+                            animation: google.maps.Animation.DROP,
+                            map: map,
+                            icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
+                            title: "<div style = 'height:60px;width:200px'><b>Your location:</b><br />Latitude: " + p.coords.latitude + "<br />Longitude: " + p.coords.longitude
+                        });
+                        google.maps.event.addListener(marker, "click", function (e) {
+                            var infoWindow = new google.maps.InfoWindow();
+                            infoWindow.setContent(marker.title);
+                            infoWindow.open(map, marker);
+                        });
+                    });
+                } else {
+                    alert('Geo Location feature is not supported in this browser.');
+                }
+
+
+                for (var i = 0; i < response.length; i++) {
+                    //Push data from database into global variables to be used in different methods
+                    markersArray.push({ latitude: response[i]["latitude"], longitude: response[i]["longitude"] });
+                    busStops.push({ busNumber: response[i]["busNumber"] });
+                    busStopStreet.push(response[i]["busAddress"]);
+                    busTo.push(response[i]["busTowards"]);
+                    busVia.push(response[i]["busVia"]);
+
+                    //Markers
+                    if (response[i]["busNumber"] == "27")
+                    {
+                        marker = new google.maps.Marker({
+                            //setTimeout: (function () {
+                            //initialize(response[i]);
+                            //},i * 200),
+                            position: new google.maps.LatLng(response[i]["latitude"], response[i]["longitude"]),
+                            animation: google.maps.Animation.DROP,
+                            icon: 'http://labs.google.com/ridefinder/images/mm_20_yellow.png',
+                            map: map,
+                            title: 'Bus Information'
+                        
+                        });
+                    }
+                    if (response[i]["busNumber"] == "77a")
+                    {
+                        marker = new google.maps.Marker({
+                            //setTimeout: (function () {
+                            //initialize(response[i]);
+                            //},i * 200),
+                            position: new google.maps.LatLng(response[i]["latitude"], response[i]["longitude"]),
+                            animation: google.maps.Animation.DROP,
+                            icon: 'http://labs.google.com/ridefinder/images/mm_20_red.png',
+                            map: map,
+                            title: 'Bus Information'
+                        });
+                    }
+
+                    if (response[i]["busNumber"] == "75") {
+                        marker = new google.maps.Marker({
+                            //setTimeout: (function () {
+                            //initialize(response[i]);
+                            //},i * 200),
+                            position: new google.maps.LatLng(response[i]["latitude"], response[i]["longitude"]),
+                            animation: google.maps.Animation.DROP,
+                            icon: 'http://labs.google.com/ridefinder/images/mm_20_blue.png',
+                            map: map,
+                            title: 'Bus Information'
+                        });
+                    }
+
+                    if (response[i]["busNumber"] == "65") {
+                        marker = new google.maps.Marker({
+                            //setTimeout: (function () {
+                            //initialize(response[i]);
+                            //},i * 200),
+                            position: new google.maps.LatLng(response[i]["latitude"], response[i]["longitude"]),
+                            animation: google.maps.Animation.DROP,
+                            icon: 'http://labs.google.com/ridefinder/images/mm_20_purple.png',
+                            map: map,
+                            title: 'Bus Information'
+                        });
+                    }
+
+                    if (response[i]["busNumber"] == "54a") {
+                        marker = new google.maps.Marker({
+                            //setTimeout: (function () {
+                            //initialize(response[i]);
+                            //},i * 200),
+                            position: new google.maps.LatLng(response[i]["latitude"], response[i]["longitude"]),
+                            animation: google.maps.Animation.DROP,
+                            icon: 'http://labs.google.com/ridefinder/images/mm_20_white.png',
+                            map: map,
+                            title: 'Bus Information'
+                        });
+                    }
+                    markers.push(marker);
+
+
+
+                    google.maps.event.addListener(marker, 'click', (function (marker, i) {
+                        return function () {
+                            var distance = getDistanceFromLatLonInKm(response[i]["latitude"], response[i]["longitude"], myLat, myLong);
+                            var infowindow = new google.maps.InfoWindow({
+                                content: ("<b>Bus Number: </b>" + response[i]["busNumber"] +
+                                            "<br /><b>Bus To: </b>" + response[i]["busTowards"] +
+                                            "<br /><b>Bus Via: </b>" + response[i]["busVia"] +
+                                           "<br /><b>Distance: </b>" + distance.toPrecision(4) + "km" +
+                                         "<br /><b>Location: </b>" + response[i]["busStopLocation"])
+                            });
+                            infowindow.open(map, marker);
+                            var newLoc = new google.maps.LatLng(response[i]["latitude"], response[i]["longitude"]);
+                            var panoramaOptions = {
+                                position: newLoc,
+                                pov: {
+                                    heading: 34,
+                                    pitch: 10
+                                }
+                            };
+
+                            //Set Pano
+                            var panorama = new google.maps.StreetViewPanorama(document.getElementById('pano'), panoramaOptions);
+                            map.setStreetView(panorama);
+                        }
+                    })(marker, i));
+
+
+                }
+
+                appendDestinations(response);
+
+
+                //distanceArray.sort();
+
+                //alert(distanceArray[0]);
+
+            }
+
+            call(m);
+
+        }
+
+
+
+        //Initalizes what is in the function
+        google.maps.event.addDomListener(window, 'load', initialize);
+
+        var xTest = function (response) {
+            console.log(typeof (response));
+            console.log(response);
+            console.log(JSON.stringify(response));
+
+            console.log(response[0]);
+            console.log(response[1]["busNumber"]);
+            console.log(response[1]["busTowards"]);
+            console.log(response[1]["busVia"]);
+            console.log(response[1]["bStopNumber"]);
+            console.log(response[1]["busAddress"]);
+            console.log(response[1]["busStopLocation"]);
+
+
+        }
+
+        //Takes URL where the database info is and converts to JSON format
+        var call = function (xTest) {
+            $.ajax({
+                url: "/BusDetails/Index",
+                accepts: {
+                    json: "application/json"
+                },
+                success: function (response) {
+                    console.log("boom");
+                    xTest(response);
+                }
+            });
+        }
+        //Call Back Method
+        call(xTest);
+    });
+</script>
